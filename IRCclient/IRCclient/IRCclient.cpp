@@ -34,10 +34,14 @@ int main(int argc, char*argv[])
 
 	cout << "Line 34" << endl;
 
-	opensock(server, portnr);
+	MySocket my;
 
-	//Put code here
+	my.opensock(server, portnr);
 
+	SOCKET sock = my.getsocket();
+	sockaddr_in serverAddr = my.getserveraddr();
+
+	connect(sock, (sockaddr *)&serverAddr, sizeof(serverAddr));
 
 	WSACleanup();
 
