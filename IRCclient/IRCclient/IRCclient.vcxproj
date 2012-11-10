@@ -76,6 +76,10 @@
   <ItemGroup>
     <ClCompile Include="IRCclient.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Misc.hpp" />
+    <ClInclude Include="StartSession.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
