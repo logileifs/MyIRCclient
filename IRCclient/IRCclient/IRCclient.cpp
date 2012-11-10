@@ -17,35 +17,19 @@ using namespace std;
 
 int main(int argc, char*argv[])
 {
-	cout << "Number of arguments: " << argc << endl;
 	if(argc != 3) helpme();
 
-	char * server = new char[];
-	server = argv[1];
+	Session my;
+	cout << "Number of arguments: " << argc << endl;
 
-	cout << "Line 26" << endl;
+	my.setserver(argc, argv);
+	my.setport(argc, argv);
 
-	char * optport = new char[];
-	optport = argv[2];
+	my.opensocket(my.server, my.portnr);
 
-	cout << "Line 31" << endl;
-
-	unsigned short portnr = (unsigned short) strtoul(optport, NULL, 0);	//Cast the port number from char to short int
-
-	cout << "Line 34" << endl;
-
-	MySocket my;
-
-	my.opensock(server, portnr);
-
-	SOCKET sock = my.getsocket();
-	sockaddr_in serverAddr = my.getserveraddr();
-
-	connect(sock, (sockaddr *)&serverAddr, sizeof(serverAddr));
+	connect(my.sock, (sockaddr *)&my.serverAddr, sizeof(my.serverAddr));
 
 	WSACleanup();
-
-	cout << "Line 85" << endl;
 
 	return success();
 }

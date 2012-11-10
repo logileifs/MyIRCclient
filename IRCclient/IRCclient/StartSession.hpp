@@ -1,66 +1,62 @@
 #ifndef OpenSocket_h__
 #define OpenSocket_h__
 
+//Standard library headers
 #include <iostream>
 #include <winsock2.h>
 #include <WS2tcpip.h>
+
+//Project headers
+#include "Misc.hpp"
 
 
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
 
-public class MySocket
+public class Session
 {
 	public:
-		SOCKET sock;
-		sockaddr_in serverAddr;
+		char * server;// = new char[];
+		char * port;// = new char[];
+		unsigned short int portnr;
+		SOCKET sock;			//Socket handle
+		sockaddr_in serverAddr;	//Socket address information
 
+		void setserver(int argc, char*argv[]);
+		void setport(int argc, char*argv[]);
 		SOCKET getsocket();
 		sockaddr_in getserveraddr();
-		void opensock(char server[], short portnr);
+		void opensocket(char server[], short portnr);
 };
 
-SOCKET MySocket::getsocket()
+void Session::setserver(int argc, char*argv[])
+{
+	server = new char[];
+	server = argv[1];
+}
+
+void Session::setport(int argc, char*argv[])
+{
+	port = new char[];
+	port = argv[2];
+
+	portnr = (unsigned short) strtoul(port, NULL, 0);	//Cast the port number from char to unsigned short int
+}
+
+SOCKET Session::getsocket()
 {
 	return sock;
 }
 
-sockaddr_in MySocket::getserveraddr()
+sockaddr_in Session::getserveraddr()
 {
 	return serverAddr;
 }
 
-void makeSYN(char SYN[])
+void Session::opensocket(char server[], short portnr)
 {
-	//char syn[16];
-
-	SYN[0] = 0x53;	//SMID
-
-	SYN[1] = 0;		//FLAGS
-
-	SYN[2] = 0;		//SID
-	SYN[3] = 0;		//SID
-
-	SYN[4] = 0;		//LENGTH
-	SYN[5] = 0;		//LENGTH
-	SYN[6] = 0;		//LENGTH
-	SYN[7] = 0;		//LENGTH
-
-	SYN[8] = 0;		//SEQNUM
-	SYN[9] = 0;		//SEQNUM
-	SYN[10] = 0;		//SEQNUM
-	SYN[11] = 0;		//SEQNUM
-
-	SYN[12]	= 0;	//WINDW
-	SYN[13] = 0;	//WINDW
-	SYN[14] = 0;	//WINDW
-	SYN[15] = 0;	//WINDW
-}
-
-void MySocket::opensock(char server[], short portnr)
-{
-	WSADATA wsaDATA;
+	WSADATA wsaDATA;	//Start up Winsock
 	int iResult;
 
 	iResult = WSAStartup(MAKEWORD(2,2),&wsaDATA);
@@ -73,7 +69,7 @@ void MySocket::opensock(char server[], short portnr)
 	hostent *host;
 
 	host = (hostent *) gethostbyname((char *) server);
-	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);		//Create socket
 
 	if(sock == INVALID_SOCKET)
 	{
@@ -82,9 +78,9 @@ void MySocket::opensock(char server[], short portnr)
 		exit(1);
 	}
 
-	serverAddr.sin_family = AF_INET;							
-	serverAddr.sin_port = htons(portnr);						//portNr is passed into the htons function and assigned to sin_port of serverAddr struct
-	serverAddr.sin_addr = *((struct in_addr *) host->h_addr);	//The host address is assigned to serverAddr struct
+	serverAddr.sin_family = AF_INET;							//address family Internet
+	serverAddr.sin_port = htons(portnr);						//Port to connect on
+	serverAddr.sin_addr = *((struct in_addr *) host->h_addr);	//Target address
 	memset(&(serverAddr.sin_zero), 0, 8);
 }
 
