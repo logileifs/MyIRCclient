@@ -75,10 +75,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="IRCclient.cpp" />
+    <ClCompile Include="Session.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc.hpp" />
-    <ClInclude Include="StartSession.hpp" />
+    <ClInclude Include="Session.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -18,12 +18,15 @@
     <ClCompile Include="IRCclient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StartSession.hpp">
+    <ClInclude Include="Misc.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Misc.hpp">
+    <ClInclude Include="Session.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
