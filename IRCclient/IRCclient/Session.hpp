@@ -6,11 +6,11 @@
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #include <ctime>
-#include <cstring>
+#include <string>
+#include <fstream>
 
 //Project headers
 #include "Misc.hpp"
-
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -28,18 +28,26 @@ public class Session
 
 		time_t rawtime;
 		struct tm * currenttime;
+		string echo;
 		char buffer[80];
+
+		//Log variables
+		ofstream out;
+		char * logfile;
 
 		void setserver(int argc, char*argv[]);
 		void setport(int argc, char*argv[]);
-		SOCKET getsocket();
-		sockaddr_in getserveraddr();
+//		SOCKET getsocket();
+//		sockaddr_in getserveraddr();
 		void opensocket(char server[], short portnr);
 		void openconnection();
 
-		void echocommand();
 		void startsession();
 		void join();
+		void chat();
+		void openlog();
+		void writelog(string echo);
+		void closelog();
 		
 		char* gettime();
 
@@ -60,17 +68,18 @@ void Session::setport(int argc, char*argv[])
 
 	portnr = (unsigned short) strtoul(port, NULL, 0);	//Cast the port number from char to unsigned short int
 }
-
+/*
 SOCKET Session::getsocket()
 {
 	return sock;
 }
-
+*/
+/*
 sockaddr_in Session::getserveraddr()
 {
 	return serverAddr;
 }
-
+*/
 void Session::opensocket(char server[], short portnr)
 {
 	WSADATA wsaDATA;	//Start up Winsock
@@ -109,8 +118,6 @@ void Session::openconnection()
 
 	else
 		{
-			//time(&start);
-			//sessionstarted = localtime(&start);
 			isconnected = true; //Success
 		}
 }
@@ -118,6 +125,45 @@ void Session::openconnection()
 void Session::join()
 {
 
+}
+
+void Session::chat()
+{
+	openlog();
+	cout << "Standing by for input" << endl;
+
+	while(connected())
+	{
+		cout << "Message: ";
+		getline(cin, echo);
+
+		cout << gettime() << echo << endl;
+		writelog(echo);
+
+		if(echo == "/quit") isconnected = false;
+	}
+}
+
+void Session::openlog()
+{
+	logfile = "irc.log";
+
+	out.open(logfile);
+
+	if(out.fail())
+	{
+		logfileerror();
+	}
+}
+
+void Session::writelog(string echo)
+{
+	out << gettime() << echo << endl;
+}
+
+void Session::closelog()
+{
+	out.close();
 }
 
 char* Session::gettime()
@@ -144,6 +190,8 @@ void Session::disconnect()
 		closesocket(sock);
 
 	cout << "The disconnect function has been called and the connection has been closed" << endl;
+
+	closelog();
 
 	WSACleanup(); //Clean up Winsock
 }

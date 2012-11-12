@@ -33,25 +33,10 @@ int main(int argc, char*argv[])
 
 	if(session.connected())
 	{
-		string echo;
-		cout << "Standing by for input" << endl;
-
-		while(session.connected())		//This should be in a separate function
-		{
-			cout << "Message: ";
-			getline(cin, echo);
-
-			cout << session.gettime() << echo << endl;
-
-//			Sleep(100);
-
-			if(echo == "/quit") session.isconnected = false;
-		}
+		session.chat();
 	}
 
 	session.disconnect();
-
-	//Do some stuff
 
 	WSACleanup();
 

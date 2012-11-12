@@ -20,6 +20,11 @@ int success()
 	return 0;
 }
 
+void logfileerror()
+{
+	cout << "Failed to open log file" << endl;
+}
+
 //This function is not being used
 void quit()
 {
