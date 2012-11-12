@@ -6,6 +6,7 @@
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #include <ctime>
+#include <cstring>
 
 //Project headers
 #include "Misc.hpp"
@@ -18,12 +19,16 @@ using namespace std;
 public class Session
 {
 	public:
-		char * server;// = new char[];
-		char * port;// = new char[];
+		char * server;
+		char * port;
 		unsigned short int portnr;
 		SOCKET sock;			//Socket handle
 		sockaddr_in serverAddr;	//Socket address information
 		bool isconnected;
+
+		time_t rawtime;
+		struct tm * currenttime;
+		char buffer[80];
 
 		void setserver(int argc, char*argv[]);
 		void setport(int argc, char*argv[]);
@@ -32,8 +37,11 @@ public class Session
 		void opensocket(char server[], short portnr);
 		void openconnection();
 
+		void echocommand();
 		void startsession();
 		void join();
+		
+		char* gettime();
 
 		bool connected();
 		void disconnect();
@@ -79,7 +87,6 @@ void Session::opensocket(char server[], short portnr)
 	hostent *host;
 
 	host = (hostent *) gethostbyname((char *) server);		//Host address
-//	host = getaddrinfo(server);
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);		//Create socket
 
 	if(sock == INVALID_SOCKET)
@@ -98,18 +105,29 @@ void Session::opensocket(char server[], short portnr)
 
 void Session::openconnection()
 {
-	if(connect(sock, (sockaddr *)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
-	{
-		isconnected = false;
-	}
+	if(connect(sock, (sockaddr *)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)	isconnected = false;
 
 	else
-		isconnected = true; //Success
+		{
+			//time(&start);
+			//sessionstarted = localtime(&start);
+			isconnected = true; //Success
+		}
 }
 
 void Session::join()
 {
 
+}
+
+char* Session::gettime()
+{
+	time (&rawtime);
+	currenttime = localtime(&rawtime);
+
+	strftime(buffer, 80, "%I:%M:%S ", currenttime);
+
+	return buffer;
 }
 
 bool Session::connected()

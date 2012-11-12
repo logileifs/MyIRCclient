@@ -6,7 +6,7 @@
 #include <iostream>
 #include <winsock2.h>
 #include <WS2tcpip.h>
-#include <time.h>
+#include <string>
 
 //Project headers
 #include "Session.hpp"
@@ -33,26 +33,19 @@ int main(int argc, char*argv[])
 
 	if(session.connected())
 	{
-		char q;
-		int timer = clock();	//Start timer
-//		while ((timer/1000) < 10)	//While timer is less than 10 seconds
-		while(session.connected())
+		string echo;
+		cout << "Standing by for input" << endl;
+
+		while(session.connected())		//This should be in a separate function
 		{
-			timer = clock();		//Update the timer
-//			cout << "The connection is open and you can do something" << endl;
-//			cout << "Enter q to quit, else the timer will just keep on running" << endl;
-			printf("The connection is open and you can do something\r");
-//			cin >> q;
-			if(q == 'q')
-				session.isconnected = false;
-			if((timer/1000) % 5 == 0)
-			{
-				//cout << "The connection has been open for " << (timer/1000) << " seconds" << endl;
-//				cout << "Enter q to quit, else the timer will just keep on running" << endl;
-				printf("Enter q to quit, else the timer will just keep on running\r");
-				cin >> q;
-//			Sleep(100);//wait for 100 milliseconds
-			}
+			cout << "Message: ";
+			getline(cin, echo);
+
+			cout << session.gettime() << echo << endl;
+
+//			Sleep(100);
+
+			if(echo == "/quit") session.isconnected = false;
 		}
 	}
 
