@@ -19,40 +19,70 @@ using namespace std;
 public class Session
 {
 	public:
+
+#pragma region Class Variables
+	//Input arguments
 		char * server;
 		char * port;
 		unsigned short int portnr;
+
+	//Winsock variables
 		SOCKET sock;			//Socket handle
 		sockaddr_in serverAddr;	//Socket address information
+
+	//Bool
 		bool isconnected;
 
+	//Time variables
 		time_t rawtime;
 		struct tm * currenttime;
 		string echo;
-		char buffer[80];
+		char clocktime[80];
+		char datetime[80];
 
-		//Log variables
+	//Log variables
 		ofstream out;
 		char * logfile;
 
+	//User info
+		char nick[9];
+
+	//Send/receive
+		int bytes;
+#pragma endregion Class Variables
+
+#pragma region Class Functions
+	//Handle input
 		void setserver(int argc, char*argv[]);
 		void setport(int argc, char*argv[]);
-//		SOCKET getsocket();
-//		sockaddr_in getserveraddr();
-		void opensocket(char server[], short portnr);
-		void openconnection();
 
+	//Initialize socket
+		void opensocket(char server[], short portnr);
+
+	//Connect and join functions
+		void openconnection();
 		void startsession();
-		void join();
+
+	//Send and chat
+		int receive(char data[]);
+		void sendmsg(char msg[]);
 		void chat();
+
+	//Log functions
 		void openlog();
 		void writelog(string echo);
 		void closelog();
 		
+	//Time functions
 		char* gettime();
+		char* getdatetime();
 
+	//Bool functions
 		bool connected();
+
+	//Disconnect function
 		void disconnect();
+#pragma endregion Class Functions
 };
 
 void Session::setserver(int argc, char*argv[])
@@ -68,18 +98,7 @@ void Session::setport(int argc, char*argv[])
 
 	portnr = (unsigned short) strtoul(port, NULL, 0);	//Cast the port number from char to unsigned short int
 }
-/*
-SOCKET Session::getsocket()
-{
-	return sock;
-}
-*/
-/*
-sockaddr_in Session::getserveraddr()
-{
-	return serverAddr;
-}
-*/
+
 void Session::opensocket(char server[], short portnr)
 {
 	WSADATA wsaDATA;	//Start up Winsock
@@ -122,9 +141,58 @@ void Session::openconnection()
 		}
 }
 
-void Session::join()
+void Session::startsession()
 {
+	char data[512];
+	//Receive data from server
 
+	char cap[] = "CAP LS\r\n";
+	sendmsg(cap);
+
+	char nick[] = "NICK Theragon\r\n";
+	sendmsg(nick);
+
+	char user[] = "USER Theragon 0 * :...\r\n";
+	sendmsg(user);
+
+	char capreq[] = "CAP REQ :multi-prefix\r\n";
+	sendmsg(capreq);
+
+	char capend[] = "CAP END\r\n";
+	sendmsg(capend);
+
+	while(true)
+	{
+		receive(data);
+		cout << data;
+	}
+
+
+/*
+	//Get user info
+	cout << "Enter nickname: ";
+	cin.get(nick, 9);
+
+	char user[] = "Theragon";
+*/
+
+	//Get channel list
+//	char CAP[] = "LIST\r\n";
+//	sendmsg(CAP);
+
+//	sendmsg(channel);
+}
+
+int Session::receive(char data[])
+{
+	bytes = recv(sock, data, strlen(data), 0);
+
+	return bytes;
+}
+
+void Session::sendmsg(char msg[])
+{
+	send(sock, msg, strlen(msg), 0);
 }
 
 void Session::chat()
@@ -137,10 +205,10 @@ void Session::chat()
 		cout << "Message: ";
 		getline(cin, echo);
 
-		cout << gettime() << echo << endl;
+		cout << gettime() << echo << endl;		//This should be a send function
 		writelog(echo);
 
-		if(echo == "/quit") isconnected = false;
+		if(echo == "/quit" || echo == "ragequit") isconnected = false;
 	}
 }
 
@@ -158,7 +226,7 @@ void Session::openlog()
 
 void Session::writelog(string echo)
 {
-	out << gettime() << echo << endl;
+	out << getdatetime() << " client: " << echo << endl;
 }
 
 void Session::closelog()
@@ -171,9 +239,19 @@ char* Session::gettime()
 	time (&rawtime);
 	currenttime = localtime(&rawtime);
 
-	strftime(buffer, 80, "%I:%M:%S ", currenttime);
+	strftime(clocktime, 80, "%I:%M:%S ", currenttime);
 
-	return buffer;
+	return clocktime;
+}
+
+char* Session::getdatetime()
+{
+	time (&rawtime);
+	currenttime = localtime(&rawtime);
+
+	strftime(datetime, 80, "%d %b %Y %I:%M:%S ", currenttime);
+
+	return datetime;
 }
 
 bool Session::connected()

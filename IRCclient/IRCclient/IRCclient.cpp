@@ -33,6 +33,7 @@ int main(int argc, char*argv[])
 
 	if(session.connected())
 	{
+		session.startsession();
 		session.chat();
 	}
 
