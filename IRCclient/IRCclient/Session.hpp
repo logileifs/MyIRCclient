@@ -36,7 +36,6 @@ public class Session
 	//Time variables
 		time_t rawtime;
 		struct tm * currenttime;
-		string echo;
 		char clocktime[80];
 		char datetime[80];
 
@@ -45,14 +44,26 @@ public class Session
 		char * logfile;
 
 	//User info
-		char nick[9];
+		char nick[13];
+
+	//Commands
+		char * CAP;
+		char * NICK;
+		char * CRLF;
+		char * USER;
+		char * CAPREQ;
+		char * CAPEND;
+		char * LIST;
 
 	//Send/receive
 		int bytes;
+		char data[512];
+		char message[512];
+
 #pragma endregion Class Variables
 
 #pragma region Class Functions
-	//Handle input
+	//Handle input / set functions
 		void setserver(int argc, char*argv[]);
 		void setport(int argc, char*argv[]);
 
@@ -61,7 +72,7 @@ public class Session
 
 	//Connect and join functions
 		void openconnection();
-		void startsession();
+		void startsession(char data[]);
 
 	//Send and chat
 		int receive(char data[]);
@@ -70,7 +81,8 @@ public class Session
 
 	//Log functions
 		void openlog();
-		void writelog(string echo);
+		void clientlog(char message[]);
+		void serverlog(char data[]);
 		void closelog();
 		
 	//Time functions
@@ -141,46 +153,56 @@ void Session::openconnection()
 		}
 }
 
-void Session::startsession()
+void Session::startsession(char data[])
 {
-	char data[512];
+	openlog();		//Open log file for the session
+
+	cout << "Enter your nickname: ";
+	cin.get(nick, 9);
+	cin.ignore(strlen(nick), '\n');		//Clear input buffer
+
+	char NICK[] = "NICK ";
+	char CRLF[] = "\r\n";
+	strcat(nick, CRLF);
+	strcat(NICK, nick);
+
+	cout << "Your nickname is: " << nick << endl;
+
+	char CAP[] = "CAP LS\r\n";
+
+	char USER[] = "USER Theragon 0 * :...\r\n";
+
+	char CAPREQ[] = "CAP REQ :multi-prefix\r\n";
+
+	char CAPEND[] = "CAP END\r\n";
+
+	sendmsg(CAP);
+
+	sendmsg(NICK);
+
+	sendmsg(USER);
+
+	sendmsg(CAPREQ);
+
+	sendmsg(CAPEND);
+
 	//Receive data from server
 
-	char cap[] = "CAP LS\r\n";
-	sendmsg(cap);
-
-	char nick[] = "NICK Theragon\r\n";
-	sendmsg(nick);
-
-	char user[] = "USER Theragon 0 * :...\r\n";
-	sendmsg(user);
-
-	char capreq[] = "CAP REQ :multi-prefix\r\n";
-	sendmsg(capreq);
-
-	char capend[] = "CAP END\r\n";
-	sendmsg(capend);
-
-	while(true)
+	do
 	{
 		receive(data);
+		serverlog(data);
+
+		if(strchr(data,'0')!=nullptr)
+			if(strchr(data, '0')!=nullptr)
+				if(strchr(data, '1')!=nullptr)		//Search for "[:prefix][001][nick][:trailer]"
+				{
+					cout << "Server connection established" << endl;
+				}
+
 		cout << data;
-	}
 
-
-/*
-	//Get user info
-	cout << "Enter nickname: ";
-	cin.get(nick, 9);
-
-	char user[] = "Theragon";
-*/
-
-	//Get channel list
-//	char CAP[] = "LIST\r\n";
-//	sendmsg(CAP);
-
-//	sendmsg(channel);
+	}while(bytes != 0);		//Add timer/timeout function
 }
 
 int Session::receive(char data[])
@@ -197,18 +219,21 @@ void Session::sendmsg(char msg[])
 
 void Session::chat()
 {
-	openlog();
+	cout << endl;
 	cout << "Standing by for input" << endl;
 
 	while(connected())
 	{
 		cout << "Message: ";
-		getline(cin, echo);
+		cin.get(message, 512);
+		cout << gettime() << message << endl;
+		sendmsg(message);
+		clientlog(message);
+		cin.ignore(strlen(message), '\n');		//Clear input buffer
+		
+		//receive(data);
 
-		cout << gettime() << echo << endl;		//This should be a send function
-		writelog(echo);
-
-		if(echo == "/quit" || echo == "ragequit") isconnected = false;
+		if(message == "quit" || message == "ragequit") disconnect();	//Quit commands not working :(
 	}
 }
 
@@ -224,9 +249,14 @@ void Session::openlog()
 	}
 }
 
-void Session::writelog(string echo)
+void Session::clientlog(char message[])
 {
-	out << getdatetime() << " client: " << echo << endl;
+	out << getdatetime() << " client: " << message << endl;
+}
+
+void Session::serverlog(char data[])
+{
+	out << getdatetime() << " server: " << data << endl;
 }
 
 void Session::closelog()
@@ -268,10 +298,12 @@ void Session::disconnect()
 		closesocket(sock);
 
 	cout << "The disconnect function has been called and the connection has been closed" << endl;
+	cout << "Here, the user should be asked if he wants to reconnect or quit" << endl;
 
-	closelog();
+	closelog();		//Close the log file
 
-	WSACleanup(); //Clean up Winsock
+	WSACleanup();	//Clean up Winsock
+	exit(1);		//Quit the program
 }
 
 #endif // Session_h__

@@ -21,7 +21,6 @@ int main(int argc, char*argv[])
 	if(argc != 3) helpme();
 
 	Session session;
-	cout << "Number of arguments: " << argc << endl;
 
 	session.setserver(argc, argv);
 	session.setport(argc, argv);
@@ -29,12 +28,10 @@ int main(int argc, char*argv[])
 	session.opensocket(session.server, session.portnr);
 
 	session.openconnection();
-//	int IRC::start(char* server, int port, char* nick, char* user, char* name, char* pass);		//Connects to an IRC server.
 
 	if(session.connected())
 	{
-		session.startsession();
-		session.chat();
+		session.startsession(session.data);
 	}
 
 	session.disconnect();
