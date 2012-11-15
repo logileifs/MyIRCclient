@@ -107,26 +107,27 @@ public class Session
 		void disconnect();
 
 #pragma endregion Class Functions
+
 };
 
 Session::Session(void)
 {
 	//Initialize commands
 
-	strcpy_s(CAP, "CAP LS\r\n");
+	strcpy_s(CAP, "CAP LS\r\n");					//CAP LS command
 
-	strcpy_s(NICK, "NICK ");
+	strcpy_s(NICK, "NICK ");						//NICK command
 
-	strcpy_s(CRLF, "\r\n");
+	strcpy_s(CRLF, "\r\n");							//Carriage return, line feed string
 
-	strcpy_s(USER, "USER ");		//USER = "USER [nick] 0 * :...\r\n"
-	strcpy_s(USERTRAIL, " 0 * :...\r\n");
+	strcpy_s(USER, "USER ");						//USER command
+	strcpy_s(USERTRAIL, " 0 * :...\r\n");			//USER trail
 
-	strcpy_s(CAPREQ, "CAP REQ :multi-prefix\r\n");
+	strcpy_s(CAPREQ, "CAP REQ :multi-prefix\r\n");	//CAPREQ command
 
-	strcpy_s(CAPEND, "CAP END\r\n");
+	strcpy_s(CAPEND, "CAP END\r\n");				//CAP END command
 
-	strcpy_s(LIST, "LIST \r\n");
+	strcpy_s(LIST, "LIST \r\n");					//LIST command
 }
 
 void Session::setserver(int argc, char*argv[])
@@ -255,7 +256,7 @@ void Session::chat()
 		sendmsg(message);
 		clientlog(message);
 
-		if(message == "quit" || message == "ragequit") disconnect();	//Quit commands not working :(
+		parsestring(message);
 
 		cin.ignore(strlen(message), '\n');		//Clear input buffer
 		
@@ -266,21 +267,27 @@ void Session::chat()
 
 void Session::parsestring(char parse[])
 {
+	//Use switch statement here instead of if
 	if(parse == NICK)
 	{
-		cout << "This should parse the NICK command" << endl;
 		strcat_s(NICK, nick);	//Place the nickname behind the NICK command
 		strcat_s(NICK, CRLF);	//Place the \r\n characters behind the nick
 	}
+
 	if(parse == USER)
 	{
-		cout << "This should parse the USER command" << endl;
-		strcat_s(USER, nick);
-		strcat_s(USER, USERTRAIL);
+		strcat_s(USER, nick);		//Place the nickname behind the USER command
+		strcat_s(USER, USERTRAIL);	//Place the USER trail behind the nickname
 	}
-	if(parse == message)	//This needs to be tested
+
+	if(parse == message)	//This is working but needs more testing
 	{
-		cout << "This should parse the message" << endl;
+		if(strcmp(message, "quit")==0)
+			disconnect();
+
+		if(strcmp(message, "ragequit")==0)
+			disconnect();
+
 		strcat_s(message, CRLF);
 	}
 }
@@ -299,12 +306,12 @@ void Session::openlog()
 
 void Session::clientlog(char message[])
 {
-	out << getdatetime() << " client: " << message << endl;
+	out << getdatetime() << " "  << nick << ": " << message << endl;
 }
 
 void Session::serverlog(char data[])
 {
-	out << getdatetime() << " server: " << data;
+	out << getdatetime() << " server: " << data;		//Need to parse input first
 }
 
 void Session::closelog()
@@ -316,7 +323,7 @@ char* Session::gettime()
 {
 	time (&rawtime);
 	currenttime = localtime(&rawtime);
-//	currenttime = localtime_s(currenttime);		//Try this later
+//	currenttime = localtime_s(currenttime, &rawtime);		//Try this later
 
 	strftime(clocktime, 80, "%I:%M:%S ", currenttime);
 

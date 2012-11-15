@@ -1,5 +1,5 @@
 //MyIRCclient is a simple IRC client
-//Author: Benedikt Logi Leifsson Sörensen
+//Author: Benedikt Logi Leifsson Sörensen, Halldór Vilhjálmsson, Heimir Már Helgason
 //Date: 10.11.2012
 
 //Library headers
