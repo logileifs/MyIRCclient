@@ -20,29 +20,29 @@ Session::Session(void)
 	strcpy_s(LIST, "LIST \r\n");					//LIST command
 }
 
-void Session::setserver(int argc, char*argv[])
+void Session::setServer(int argc, char*argv[])
 {
 	server = new char[];
 	server = argv[1];
 }
 
-void Session::setport(int argc, char*argv[])
+void Session::setPort(int argc, char*argv[])
 {
 	port = new char[];
 	port = argv[2];
 
-	portnr = (unsigned short) strtoul(port, NULL, 0);	//Cast the port number from char to unsigned short int
+	portNr = (unsigned short) strtoul(port, NULL, 0);	//Cast the port number from char to unsigned short int
 }
 
-void Session::opensocket(char server[], short portnr)
+void Session::openSocket(char server[], short portnr)
 {
 	WSADATA wsaDATA;	//Start up Winsock
-	int iResult;
+	int result;
 
-	iResult = WSAStartup(MAKEWORD(2,2),&wsaDATA);
-	if(iResult != 0)
+	result = WSAStartup(MAKEWORD(2,2),&wsaDATA);
+	if(result != 0)
 	{
-		printf("WSAStartup failed: %d\n", iResult);
+		printf("WSAStartup failed: %d\n", result);
 		WSACleanup();
 		exit(1);
 	}
@@ -60,23 +60,21 @@ void Session::opensocket(char server[], short portnr)
 	}
 
 	serverAddr.sin_family = AF_INET;							//address family Internet
-	serverAddr.sin_port = htons(portnr);						//Port to connect on
+	serverAddr.sin_port = htons(portNr);						//Port to connect on
 	serverAddr.sin_addr = *((struct in_addr *) host->h_addr);	//Target address
 	memset(&(serverAddr.sin_zero), 0, 8);
 
 }
 
-void Session::openconnection()
+void Session::openConnection()
 {
-	if(connect(sock, (sockaddr *)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)	isconnected = false;
-
+	if(connect(sock, (sockaddr *)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)	
+		isConnected = false;
 	else
-		{
-			isconnected = true; //Success
-		}
+		isConnected = true; //Success
 }
 
-void Session::getuserinfo(char nick[])
+void Session::getUserInfo(char nick[])
 {
 	cout << "Enter your nickname: ";
 	cin.get(nick, 9);
@@ -85,27 +83,27 @@ void Session::getuserinfo(char nick[])
 	cout << "Your nickname is: " << nick << endl;
 }
 
-void Session::startsession(char data[])
+void Session::startSession(char data[])
 {
-	openlog();		//Open log file for the session
+	openLog();		//Open log file for the session
 
-	getuserinfo(nick);
+	getUserInfo(nick);
 
-	parsestring(NICK);
-	parsestring(USER);
+	parseString(NICK);
+	parseString(USER);
 
-	sendmsg(CAP);		//Send CAP command
-	sendmsg(NICK);		//Send NICK command
-	sendmsg(USER);		//Send USER command
-	sendmsg(CAPREQ);	//Send CAPREQ command
-	sendmsg(CAPEND);	//Send CAPEND command
+	sendMsg(CAP);		//Send CAP command
+	sendMsg(NICK);		//Send NICK command
+	sendMsg(USER);		//Send USER command
+	sendMsg(CAPREQ);	//Send CAPREQ command
+	sendMsg(CAPEND);	//Send CAPEND command
 
 	//Receive data from server
 
 	do
 	{
 		receive(data);
-		serverlog(data);
+		serverLog(data);
 
 		if(strchr(data,'0')!=nullptr)
 			if(strchr(data, '0')!=nullptr)
@@ -127,7 +125,7 @@ int Session::receive(char data[])
 	return bytes;
 }
 
-void Session::sendmsg(char msg[])
+void Session::sendMsg(char msg[])
 {
 	send(sock, msg, strlen(msg), 0);
 }
@@ -142,11 +140,11 @@ void Session::chat()
 		cout << "Message: ";
 		cin.get(message, 510);
 //		parsestring(message);		//Test this function later
-		cout << gettime() << message << endl;
-		sendmsg(message);
-		clientlog(message);
+		cout << getTime() << message << endl;
+		sendMsg(message);
+		clientLog(message);
 
-		parsestring(message);
+		parseString(message);
 
 		cin.ignore(strlen(message), '\n');		//Clear input buffer
 		
@@ -155,7 +153,7 @@ void Session::chat()
 	}
 }
 
-void Session::parsestring(char parse[])
+void Session::parseString(char parse[])
 {
 	//Use switch statement here instead of if
 	if(parse == NICK)
@@ -172,7 +170,7 @@ void Session::parsestring(char parse[])
 
 	if(parse == message)	//This is working but needs more testing
 	{
-		if(strcmp(message, "quit")==0)
+		if(strcmp(message, "/quit")==0)
 			disconnect();
 
 		if(strcmp(message, "ragequit")==0)
@@ -182,57 +180,55 @@ void Session::parsestring(char parse[])
 	}
 }
 
-void Session::openlog()
+void Session::openLog()
 {
-	logfile = "irc.log";
+	logFile = "irc.log";
 
-	out.open(logfile);
+	out.open(logFile);
 
 	if(out.fail())
-	{
-		logfileerror();
-	}
+		logFileError();
 }
 
-void Session::clientlog(char message[])
+void Session::clientLog(char message[])
 {
-	out << getdatetime() << " "  << nick << ": " << message << endl;
+	out << getDateTime() << " "  << nick << ": " << message << endl;
 }
 
-void Session::serverlog(char data[])
+void Session::serverLog(char data[])
 {
-	out << getdatetime() << " server: " << data;		//Need to parse input first
+	out << getDateTime() << " server: " << data;		//Need to parse input first
 }
 
-void Session::closelog()
+void Session::closeLog()
 {
 	out.close();
 }
 
-char* Session::gettime()
+char* Session::getTime()
 {
-	time (&rawtime);
-	currenttime = localtime(&rawtime);
+	time (&rawTime);
+	currentTime = localtime(&rawTime);
 //	currenttime = localtime_s(currenttime, &rawtime);		//Try this later
 
-	strftime(clocktime, 80, "%I:%M:%S ", currenttime);
+	strftime(clockTime, 80, "%I:%M:%S ", currentTime);
 
-	return clocktime;
+	return clockTime;
 }
 
-char* Session::getdatetime()
+char* Session::getDateTime()
 {
-	time (&rawtime);
-	currenttime = localtime(&rawtime);
+	time (&rawTime);
+	currentTime = localtime(&rawTime);
 
-	strftime(datetime, 80, "%d %b %Y %I:%M:%S ", currenttime);
+	strftime(dateTime, 80, "%d %b %Y %I:%M:%S ", currentTime);
 
-	return datetime;
+	return dateTime;
 }
 
 bool Session::connected()
 {
-	return isconnected;
+	return isConnected;
 }
 
 void Session::disconnect()
@@ -246,13 +242,13 @@ void Session::disconnect()
 	cout << "The disconnect function has been called and the connection has been closed" << endl;
 	cout << "Here, the user should be asked if he wants to reconnect or quit" << endl;
 
-	closelog();		//Close the log file
+	closeLog();		//Close the log file
 
 	WSACleanup();	//Clean up Winsock
 	exit(1);		//Quit the program
 }
 
-void Session::helpme()
+void Session::helpMe()
 {
 	cout << "This is the help function, if you are reading this, that means something went wrong";
 	exit(1);
@@ -265,7 +261,7 @@ int Session::success()
 	return 0;
 }
 
-void Session::logfileerror()
+void Session::logFileError()
 {
 	cout << "Failed to open log file" << endl;
 }

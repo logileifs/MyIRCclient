@@ -25,28 +25,28 @@ public class Session
 {
 	public:
 
-#pragma region Class Variables
+	#pragma region Class Variables
 	//Input arguments
 		char * server;
 		char * port;
-		unsigned short int portnr;
+		unsigned short int portNr;
 
 	//Winsock variables
 		SOCKET sock;			//Socket handle
 		sockaddr_in serverAddr;	//Socket address information
 
 	//Bool
-		bool isconnected;
+		bool isConnected;
 
 	//Time variables
-		time_t rawtime;
-		struct tm * currenttime;
-		char clocktime[80];
-		char datetime[80];
+		time_t rawTime;
+		struct tm * currentTime;
+		char clockTime[80];
+		char dateTime[80];
 
 	//Log variables
 		ofstream out;
-		char * logfile;
+		char * logFile;
 
 	//User info
 		char nick[BUFF];
@@ -66,41 +66,41 @@ public class Session
 		char data[BUFF];
 		char message[BUFF];
 
-#pragma endregion Class Variables
+	#pragma endregion Class Variables
 
-#pragma region Class Functions
+	#pragma region Class Functions
 	//Constructor
 		Session::Session(void);
 
 	//Handle input / set functions
-		void setserver(int argc, char*argv[]);
-		void setport(int argc, char*argv[]);
+		void setServer(int argc, char*argv[]);
+		void setPort(int argc, char*argv[]);
 
 	//Initialize socket
-		void opensocket(char server[], short portnr);
+		void openSocket(char server[], short portNr);
 
 	//Connect and join functions
-		void openconnection();
-		void getuserinfo(char nick[]);
-		void startsession(char data[]);
+		void openConnection();
+		void getUserInfo(char nick[]);
+		void startSession(char data[]);
 
 	//Send and chat
 		int receive(char data[]);
-		void sendmsg(char msg[]);
+		void sendMsg(char msg[]);
 		void chat();
 
 	//String parse
-		void parsestring(char parse[]);
+		void parseString(char parse[]);
 
 	//Log functions
-		void openlog();
-		void clientlog(char message[]);
-		void serverlog(char data[]);
-		void closelog();
+		void openLog();
+		void clientLog(char message[]);
+		void serverLog(char data[]);
+		void closeLog();
 		
 	//Time functions
-		char* gettime();
-		char* getdatetime();
+		char* getTime();
+		char* getDateTime();
 
 	//Bool functions
 		bool connected();
@@ -109,19 +109,16 @@ public class Session
 		void disconnect();
 
 	//Misc functions
-	void helpme();
+	void helpMe();
 
 	int success();
 
-	void logfileerror();
+	void logFileError();
 
-//This function is not being used
-void quit();
+	//This function is not being used
+	void quit();
 
-
-#pragma endregion Class Functions
-
-
+	#pragma endregion Class Functions
 };
 
 //#endif // Session_h__

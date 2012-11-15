@@ -20,24 +20,19 @@ using namespace std;
 
 int main(int argc, char*argv[])
 {
-	
 	Session session;
 
-	if(argc != 3) session.helpme();
+	if(argc != 3) session.helpMe();
 
-	
+	session.setServer(argc, argv);
+	session.setPort(argc, argv);
 
-	session.setserver(argc, argv);
-	session.setport(argc, argv);
+	session.openSocket(session.server, session.portNr);
 
-	session.opensocket(session.server, session.portnr);
-
-	session.openconnection();
+	session.openConnection();
 
 	if(session.connected())
-	{
-		session.startsession(session.data);
-	}
+		session.startSession(session.data);
 
 	session.disconnect();
 
