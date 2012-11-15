@@ -2,17 +2,17 @@
 //Author: Benedikt Logi Leifsson Sörensen, Halldór Vilhjálmsson, Heimir Már Helgason
 //Date: 10.11.2012
 
-//Library headers
+/*//Library headers
 #include <iostream>
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #include <ctime>
 #include <string>
-#include <fstream>
+#include <fstream>*/
 
 //Project headers
-#include "Session.hpp"
-#include "Misc.hpp"
+#include "Session.h"
+//#include "Misc.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -20,9 +20,12 @@ using namespace std;
 
 int main(int argc, char*argv[])
 {
-	if(argc != 3) helpme();
-
+	
 	Session session;
+
+	if(argc != 3) session.helpme();
+
+	
 
 	session.setserver(argc, argv);
 	session.setport(argc, argv);
@@ -40,5 +43,5 @@ int main(int argc, char*argv[])
 
 	WSACleanup();
 
-	return success();
+	return session.success();
 }
