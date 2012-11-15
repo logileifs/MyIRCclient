@@ -6,7 +6,9 @@
 #include <iostream>
 #include <winsock2.h>
 #include <WS2tcpip.h>
+#include <ctime>
 #include <string>
+#include <fstream>
 
 //Project headers
 #include "Session.hpp"

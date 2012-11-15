@@ -8,6 +8,7 @@
 #include <ctime>
 #include <string>
 #include <fstream>
+//#include <thread>		//Maybe test later
 
 //Project headers
 #include "Misc.hpp"
@@ -15,6 +16,8 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
+
+const int BUFF = 512;
 
 public class Session
 {
@@ -44,25 +47,29 @@ public class Session
 		char * logfile;
 
 	//User info
-		char nick[13];
+		char nick[BUFF];
 
 	//Commands
-		char * CAP;
-		char * NICK;
-		char * CRLF;
-		char * USER;
-		char * CAPREQ;
-		char * CAPEND;
-		char * LIST;
+		char CAP[BUFF];
+		char NICK[BUFF];
+		char CRLF[BUFF];
+		char USER[BUFF];
+		char USERTRAIL[BUFF];
+		char CAPREQ[BUFF];
+		char CAPEND[BUFF];
+		char LIST[BUFF];
 
 	//Send/receive
 		int bytes;
-		char data[512];
-		char message[512];
+		char data[BUFF];
+		char message[BUFF];
 
 #pragma endregion Class Variables
 
 #pragma region Class Functions
+	//Constructor
+		Session::Session(void);
+
 	//Handle input / set functions
 		void setserver(int argc, char*argv[]);
 		void setport(int argc, char*argv[]);
@@ -72,12 +79,16 @@ public class Session
 
 	//Connect and join functions
 		void openconnection();
+		void getuserinfo(char nick[]);
 		void startsession(char data[]);
 
 	//Send and chat
 		int receive(char data[]);
 		void sendmsg(char msg[]);
 		void chat();
+
+	//String parse
+		void parsestring(char parse[]);
 
 	//Log functions
 		void openlog();
@@ -94,8 +105,29 @@ public class Session
 
 	//Disconnect function
 		void disconnect();
+
 #pragma endregion Class Functions
 };
+
+Session::Session(void)
+{
+	//Initialize commands
+
+	strcpy_s(CAP, "CAP LS\r\n");
+
+	strcpy_s(NICK, "NICK ");
+
+	strcpy_s(CRLF, "\r\n");
+
+	strcpy_s(USER, "USER ");		//USER = "USER [nick] 0 * :...\r\n"
+	strcpy_s(USERTRAIL, " 0 * :...\r\n");
+
+	strcpy_s(CAPREQ, "CAP REQ :multi-prefix\r\n");
+
+	strcpy_s(CAPEND, "CAP END\r\n");
+
+	strcpy_s(LIST, "LIST \r\n");
+}
 
 void Session::setserver(int argc, char*argv[])
 {
@@ -153,38 +185,29 @@ void Session::openconnection()
 		}
 }
 
-void Session::startsession(char data[])
+void Session::getuserinfo(char nick[])
 {
-	openlog();		//Open log file for the session
-
 	cout << "Enter your nickname: ";
 	cin.get(nick, 9);
 	cin.ignore(strlen(nick), '\n');		//Clear input buffer
 
-	char NICK[] = "NICK ";
-	char CRLF[] = "\r\n";
-	strcat(nick, CRLF);
-	strcat(NICK, nick);
-
 	cout << "Your nickname is: " << nick << endl;
+}
 
-	char CAP[] = "CAP LS\r\n";
+void Session::startsession(char data[])
+{
+	openlog();		//Open log file for the session
 
-	char USER[] = "USER Theragon 0 * :...\r\n";
+	getuserinfo(nick);
 
-	char CAPREQ[] = "CAP REQ :multi-prefix\r\n";
+	parsestring(NICK);
+	parsestring(USER);
 
-	char CAPEND[] = "CAP END\r\n";
-
-	sendmsg(CAP);
-
-	sendmsg(NICK);
-
-	sendmsg(USER);
-
-	sendmsg(CAPREQ);
-
-	sendmsg(CAPEND);
+	sendmsg(CAP);		//Send CAP command
+	sendmsg(NICK);		//Send NICK command
+	sendmsg(USER);		//Send USER command
+	sendmsg(CAPREQ);	//Send CAPREQ command
+	sendmsg(CAPEND);	//Send CAPEND command
 
 	//Receive data from server
 
@@ -195,9 +218,10 @@ void Session::startsession(char data[])
 
 		if(strchr(data,'0')!=nullptr)
 			if(strchr(data, '0')!=nullptr)
-				if(strchr(data, '1')!=nullptr)		//Search for "[:prefix][001][nick][:trailer]"
+				if(strchr(data, '1')!=nullptr)
 				{
 					cout << "Server connection established" << endl;
+					chat();
 				}
 
 		cout << data;
@@ -225,15 +249,39 @@ void Session::chat()
 	while(connected())
 	{
 		cout << "Message: ";
-		cin.get(message, 512);
+		cin.get(message, 510);
+//		parsestring(message);		//Test this function later
 		cout << gettime() << message << endl;
 		sendmsg(message);
 		clientlog(message);
-		cin.ignore(strlen(message), '\n');		//Clear input buffer
-		
-		//receive(data);
 
 		if(message == "quit" || message == "ragequit") disconnect();	//Quit commands not working :(
+
+		cin.ignore(strlen(message), '\n');		//Clear input buffer
+		
+//		receive(data);
+//		cout << data;
+	}
+}
+
+void Session::parsestring(char parse[])
+{
+	if(parse == NICK)
+	{
+		cout << "This should parse the NICK command" << endl;
+		strcat_s(NICK, nick);	//Place the nickname behind the NICK command
+		strcat_s(NICK, CRLF);	//Place the \r\n characters behind the nick
+	}
+	if(parse == USER)
+	{
+		cout << "This should parse the USER command" << endl;
+		strcat_s(USER, nick);
+		strcat_s(USER, USERTRAIL);
+	}
+	if(parse == message)	//This needs to be tested
+	{
+		cout << "This should parse the message" << endl;
+		strcat_s(message, CRLF);
 	}
 }
 
@@ -256,7 +304,7 @@ void Session::clientlog(char message[])
 
 void Session::serverlog(char data[])
 {
-	out << getdatetime() << " server: " << data << endl;
+	out << getdatetime() << " server: " << data;
 }
 
 void Session::closelog()
@@ -268,6 +316,7 @@ char* Session::gettime()
 {
 	time (&rawtime);
 	currenttime = localtime(&rawtime);
+//	currenttime = localtime_s(currenttime);		//Try this later
 
 	strftime(clocktime, 80, "%I:%M:%S ", currenttime);
 
