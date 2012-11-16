@@ -86,13 +86,7 @@ void Session::getUserInfo(char nick[])
 
 void Session::startSession(char data[])
 {
-	//THROW AWAY
-	bool spaceChr = false;
-	bool command = false;
-	int count=0;
 	string str;
-	//THROW AWAY
-
 	bool startChat = false;
 
 	openLog();		//Open log file for the session
@@ -117,14 +111,15 @@ void Session::startSession(char data[])
 		{
 			receive(data);
 			str.append(data);
-//			parseString(data, spaceChr, command, count);
 		}while(strncmp(data, "\r\n", 2)!=0);
 		cout << str;
 		
+		newLog(str);
+
 		stringParse(str, startChat);
 		str.clear();
 
-		serverLog(data);
+//		serverLog(data);
 
 		if(startChat == true)
 			chat();
@@ -171,13 +166,13 @@ void Session::chat()
 		clientLog(message);
 
 		cin.clear();
-		cin.ignore(510, '\n');
+		cin.ignore(512, '\n');
 
 		do
 		{
 			receive(data);		//New function here to receive data until \r\n
 			cout << data;
-		}while(strncmp(data, "\r\n", 2)!=0);
+		}while(strncmp(data, "\n", 1)!=0 || bytes == 512);
 	}
 }
 
@@ -229,6 +224,11 @@ void Session::serverLog(char data[])
 		out << endl << getDateTime() << " server: ";
 	else
 		out << data;		//Need to parse input first
+}
+
+void Session::newLog(string str)
+{
+	out << getDateTime() << str;
 }
 
 void Session::closeLog()

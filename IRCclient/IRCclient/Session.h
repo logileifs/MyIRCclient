@@ -100,6 +100,7 @@ public class Session
 		void openLog();
 		void clientLog(char message[]);
 		void serverLog(char data[]);
+		void newLog(string str);
 		void closeLog();
 		
 	//Time functions
