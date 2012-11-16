@@ -100,9 +100,11 @@ void Session::startSession(char data[])
 
 	//Receive data from server
 
+	out << getDateTime() << " server: ";
 	do
 	{
 		receive(data);
+
 		serverLog(data);
 
 		if(strchr(data,'0')!=nullptr)
@@ -197,7 +199,10 @@ void Session::clientLog(char message[])
 
 void Session::serverLog(char data[])
 {
-	out << getDateTime() << " server: " << data;		//Need to parse input first
+	if(strncmp(data, "\r\n", 2)==0)
+		out << endl << getDateTime() << " server: ";
+	else
+		out << data;		//Need to parse input first
 }
 
 void Session::closeLog()
