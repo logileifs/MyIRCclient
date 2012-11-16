@@ -194,7 +194,7 @@ void Session::openLog()
 
 void Session::clientLog(char message[])
 {
-	out << getDateTime() << " "  << nick << ": " << message << endl;
+	out << endl << getDateTime() << " "  << nick << ": " << message;
 }
 
 void Session::serverLog(char data[])
