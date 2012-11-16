@@ -2,14 +2,6 @@
 //Author: Benedikt Logi Leifsson Sörensen, Halldór Vilhjálmsson, Heimir Már Helgason
 //Date: 10.11.2012
 
-/*//Library headers
-#include <iostream>
-#include <winsock2.h>
-#include <WS2tcpip.h>
-#include <ctime>
-#include <string>
-#include <fstream>*/
-
 //Project headers
 #include "Session.h"
 //#include "Misc.h"

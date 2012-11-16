@@ -18,6 +18,7 @@ Session::Session(void)
 	strcpy_s(CAPEND, "CAP END\r\n");				//CAP END command
 
 	strcpy_s(LIST, "LIST \r\n");					//LIST command
+
 }
 
 void Session::setServer(int argc, char*argv[])
@@ -68,10 +69,10 @@ void Session::openSocket(char server[], short portnr)
 
 void Session::openConnection()
 {
-	if(connect(sock, (sockaddr *)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)	
-		isConnected = false;
+	if(connect(sock, (sockaddr *)&serverAddr, sizeof(serverAddr)) == 0)	
+		isConnected = true;
 	else
-		isConnected = true; //Success
+		isConnected = false; //Error
 }
 
 void Session::getUserInfo(char nick[])
@@ -85,12 +86,21 @@ void Session::getUserInfo(char nick[])
 
 void Session::startSession(char data[])
 {
+	//THROW AWAY
+	bool spaceChr = false;
+	bool command = false;
+	int count=0;
+	string str;
+	//THROW AWAY
+
+	bool startChat = false;
+
 	openLog();		//Open log file for the session
 
 	getUserInfo(nick);
 
-	parseString(NICK);
-	parseString(USER);
+	charParse(NICK);
+	charParse(USER);
 
 	sendMsg(CAP);		//Send CAP command
 	sendMsg(NICK);		//Send NICK command
@@ -103,21 +113,32 @@ void Session::startSession(char data[])
 	out << getDateTime() << " server: ";
 	do
 	{
-		receive(data);
+		do
+		{
+			receive(data);
+			str.append(data);
+//			parseString(data, spaceChr, command, count);
+		}while(strncmp(data, "\r\n", 2)!=0);
+		cout << str;
+		
+		stringParse(str, startChat);
+		str.clear();
 
 		serverLog(data);
 
-		if(strchr(data,'0')!=nullptr)
-			if(strchr(data, '0')!=nullptr)
-				if(strchr(data, '1')!=nullptr)
-				{
-					cout << "Server connection established" << endl;
-					chat();
-				}
-
-		cout << data;
+		if(startChat == true)
+			chat();
 
 	}while(bytes != 0);		//Add timer/timeout function
+}
+
+void Session::stringParse(string str, bool &startChat)
+{
+	if(str.find("/MOTD command.")!=string::npos)
+	{
+		startChat = true;
+		cout << "/MOTD command found and the chat function should begin" << endl;
+	}
 }
 
 int Session::receive(char data[])
@@ -139,23 +160,28 @@ void Session::chat()
 
 	while(connected())
 	{
+		cout << "Am I still in the loop ?" << endl;
+
 		cout << "Message: ";
 		cin.get(message, 510);
-//		parsestring(message);		//Test this function later
-		cout << getTime() << message << endl;
+//		cout << getTime() << message << endl;
+		cout << message << endl;
+		charParse(message);
 		sendMsg(message);
 		clientLog(message);
 
-		parseString(message);
+		cin.clear();
+		cin.ignore(510, '\n');
 
-		cin.ignore(strlen(message), '\n');		//Clear input buffer
-		
-//		receive(data);
-//		cout << data;
+		do
+		{
+			receive(data);		//New function here to receive data until \r\n
+			cout << data;
+		}while(strncmp(data, "\r\n", 2)!=0);
 	}
 }
 
-void Session::parseString(char parse[])
+void Session::charParse(char parse[])
 {
 	//Use switch statement here instead of if
 	if(parse == NICK)

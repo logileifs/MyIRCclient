@@ -66,6 +66,9 @@ public class Session
 		char data[BUFF];
 		char message[BUFF];
 
+	//	bool prefix;
+	//	bool command;
+
 	#pragma endregion Class Variables
 
 	#pragma region Class Functions
@@ -90,7 +93,8 @@ public class Session
 		void chat();
 
 	//String parse
-		void parseString(char parse[]);
+		void charParse(char parse[]);
+		void stringParse(string str, bool &startChat);
 
 	//Log functions
 		void openLog();
