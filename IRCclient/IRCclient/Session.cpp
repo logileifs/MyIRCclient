@@ -19,6 +19,15 @@ Session::Session(void)
 
 	strcpy_s(LIST, "LIST \r\n");					//LIST command
 
+	//Initialize time variables
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+
+	//Initialize handles
+	hStdIn = GetStdHandle(STD_INPUT_HANDLE);
+	handles[0] = WSACreateEvent();
+	handles[1] = hStdIn;
+	WSAEventSelect(sock, handles[0], FD_READ | FD_CLOSE);
 }
 
 void Session::setServer(int argc, char*argv[])
@@ -86,15 +95,14 @@ void Session::getUserInfo(char nick[])
 
 void Session::startSession(char data[])
 {
-	string str;
-	bool startChat = false;
+	string str;		//Move this to header file but don't use the same variable for chat()
 
 	openLog();		//Open log file for the session
 
 	getUserInfo(nick);
 
-	charParse(NICK);
-	charParse(USER);
+	parseString(NICK);
+	parseString(USER);
 
 	sendMsg(CAP);		//Send CAP command
 	sendMsg(NICK);		//Send NICK command
@@ -104,7 +112,6 @@ void Session::startSession(char data[])
 
 	//Receive data from server
 
-	out << getDateTime() << " server: ";
 	do
 	{
 		do
@@ -116,10 +123,8 @@ void Session::startSession(char data[])
 		
 		newLog(str);
 
-		stringParse(str, startChat);
+		parseString(str, startChat);			//Overload all parse functions to be the same function
 		str.clear();
-
-//		serverLog(data);
 
 		if(startChat == true)
 			chat();
@@ -127,18 +132,11 @@ void Session::startSession(char data[])
 	}while(bytes != 0);		//Add timer/timeout function
 }
 
-void Session::stringParse(string str, bool &startChat)
-{
-	if(str.find("/MOTD command.")!=string::npos)
-	{
-		startChat = true;
-		cout << "/MOTD command found and the chat function should begin" << endl;
-	}
-}
-
 int Session::receive(char data[])
 {
-	bytes = recv(sock, data, strlen(data), 0);
+//	fd_set readset;
+//	if(select(0, &readset, NULL, NULL, &timeout)!=0);	//Switch out select for Event handler
+		bytes = recv(sock, data, strlen(data), 0);
 
 	return bytes;
 }
@@ -150,48 +148,47 @@ void Session::sendMsg(char msg[])
 
 void Session::chat()
 {
+	string str;								//Move this to header file but don't use the same variable for startSession()
 	cout << endl;
 	cout << "Standing by for input" << endl;
 
 	while(connected())
 	{
-		cout << "Am I still in the loop ?" << endl;
-
 		cout << "Message: ";
 		cin.get(message, 510);
-//		cout << getTime() << message << endl;
-		cout << message << endl;
-		charParse(message);
+		cout << getTime() << message << endl;
+		parseString(message);
 		sendMsg(message);
-		clientLog(message);
+		clientLog(message);			//Overload log functions
 
-		cin.clear();
-		cin.ignore(512, '\n');
+		cin.clear();				//Clear input buffer
+		cin.ignore(512, '\n');		//Ignore all newline characters
 
 		do
 		{
 			receive(data);		//New function here to receive data until \r\n
-			cout << data;
-		}while(strncmp(data, "\n", 1)!=0 || bytes == 512);
+			str.append(data);
+		}while(strncmp(data, "\r\n", 2)!=0 && strncmp(data, "\n",1)!=0 && strncmp(data, "\r",1)!=0);		//Needs a timer or something better
+		cout << str;
+		str.clear();
 	}
 }
 
-void Session::charParse(char parse[])
+void Session::parseString(char parse[])
 {
-	//Use switch statement here instead of if
 	if(parse == NICK)
 	{
 		strcat_s(NICK, nick);	//Place the nickname behind the NICK command
 		strcat_s(NICK, CRLF);	//Place the \r\n characters behind the nick
 	}
 
-	if(parse == USER)
+	else if(parse == USER)
 	{
 		strcat_s(USER, nick);		//Place the nickname behind the USER command
 		strcat_s(USER, USERTRAIL);	//Place the USER trail behind the nickname
 	}
 
-	if(parse == message)	//This is working but needs more testing
+	else if(parse == message)	//This is working but needs more testing
 	{
 		if(strcmp(message, "/quit")==0)
 			disconnect();
@@ -200,6 +197,15 @@ void Session::charParse(char parse[])
 			disconnect();
 
 		strcat_s(message, CRLF);
+	}
+}
+
+void Session::parseString(string str, bool &startChat)
+{
+	if(str.find("/MOTD command.")!=string::npos)
+	{
+		startChat = true;
+		cout << "Server connection established" << endl;
 	}
 }
 
@@ -213,22 +219,27 @@ void Session::openLog()
 		logFileError();
 }
 
-void Session::clientLog(char message[])
+void Session::clientLog(char message[])			//Overload log functions
 {
 	out << endl << getDateTime() << " "  << nick << ": " << message;
 }
 
-void Session::serverLog(char data[])
+void Session::serverLog(char data[])			//Overload log functions
 {
 	if(strncmp(data, "\r\n", 2)==0)
 		out << endl << getDateTime() << " server: ";
 	else
 		out << data;		//Need to parse input first
-}
+}	
 
-void Session::newLog(string str)
+void Session::newLog(string str)				//Overload log functions
 {
 	out << getDateTime() << str;
+}
+
+void Session::writeLog(string str)				//Overload log functions
+{
+	out << getDateTime() << " server: " << data;
 }
 
 void Session::closeLog()
@@ -295,6 +306,7 @@ int Session::success()
 void Session::logFileError()
 {
 	cout << "Failed to open log file" << endl;
+	exit(1);
 }
 
 //This function is not being used

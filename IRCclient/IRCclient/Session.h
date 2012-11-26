@@ -10,6 +10,7 @@
 #include <ctime>
 #include <string>
 #include <fstream>
+#include <conio.h>
 //#include <thread>		//Maybe test later
 
 //Project headers
@@ -35,12 +36,22 @@ public class Session
 		SOCKET sock;			//Socket handle
 		sockaddr_in serverAddr;	//Socket address information
 
+	//Handles
+		HANDLE handles[2];
+		HANDLE hStdIn;
+
 	//Bool
 		bool isConnected;
+		bool startChat;
 
 	//Time variables
 		time_t rawTime;
 		struct tm * currentTime;
+
+		struct timeval timeout;		//Timeval struct for select()
+		timeval tv_sec; // = 3;		//Seconds variable for select()
+		timeval tv_usec;//=0;		//Microseconds to maybe use with select()
+
 		char clockTime[80];
 		char dateTime[80];
 
@@ -66,9 +77,6 @@ public class Session
 		char data[BUFF];
 		char message[BUFF];
 
-	//	bool prefix;
-	//	bool command;
-
 	#pragma endregion Class Variables
 
 	#pragma region Class Functions
@@ -93,14 +101,15 @@ public class Session
 		void chat();
 
 	//String parse
-		void charParse(char parse[]);
-		void stringParse(string str, bool &startChat);
+		void parseString(char parse[]);
+		void parseString(string str, bool &startChat);
 
 	//Log functions
 		void openLog();
-		void clientLog(char message[]);
-		void serverLog(char data[]);
-		void newLog(string str);
+		void clientLog(char message[]);		//Put this in the same overloaded function
+		void serverLog(char data[]);		//Put this in the same overloaded function
+		void newLog(string str);			//Put this in the same overloaded function
+		void writeLog(string str);			//Put this in the same overloaded function
 		void closeLog();
 		
 	//Time functions
@@ -114,14 +123,12 @@ public class Session
 		void disconnect();
 
 	//Misc functions
-	void helpMe();
-
-	int success();
-
-	void logFileError();
+		void helpMe();
+		int success();
+		void logFileError();
 
 	//This function is not being used
-	void quit();
+		void quit();
 
 	#pragma endregion Class Functions
 };
