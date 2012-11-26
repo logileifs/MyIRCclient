@@ -121,9 +121,9 @@ void Session::startSession(char data[])
 		}while(strncmp(data, "\r\n", 2)!=0);
 		cout << str;
 		
-		newLog(str);
+		writeLog(str);
 
-		parseString(str, startChat);			//Overload all parse functions to be the same function
+		parseString(str, startChat);
 		str.clear();
 
 		if(startChat == true)
@@ -159,7 +159,7 @@ void Session::chat()
 		cout << getTime() << message << endl;
 		parseString(message);
 		sendMsg(message);
-		clientLog(message);			//Overload log functions
+		writeLog(message, nick);			//Overload log functions
 
 		cin.clear();				//Clear input buffer
 		cin.ignore(512, '\n');		//Ignore all newline characters
@@ -219,27 +219,14 @@ void Session::openLog()
 		logFileError();
 }
 
-void Session::clientLog(char message[])			//Overload log functions
-{
-	out << endl << getDateTime() << " "  << nick << ": " << message;
-}
-
-void Session::serverLog(char data[])			//Overload log functions
-{
-	if(strncmp(data, "\r\n", 2)==0)
-		out << endl << getDateTime() << " server: ";
-	else
-		out << data;		//Need to parse input first
-}	
-
-void Session::newLog(string str)				//Overload log functions
+void Session::writeLog(string str)				
 {
 	out << getDateTime() << str;
 }
 
-void Session::writeLog(string str)				//Overload log functions
+void Session::writeLog(string message, char nick[])			
 {
-	out << getDateTime() << " server: " << data;
+	out << endl << getDateTime() << " "  << nick << ": " << message;
 }
 
 void Session::closeLog()

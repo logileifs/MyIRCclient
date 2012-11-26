@@ -106,11 +106,10 @@ public class Session
 
 	//Log functions
 		void openLog();
-		void clientLog(char message[]);		//Put this in the same overloaded function
-		void serverLog(char data[]);		//Put this in the same overloaded function
-		void newLog(string str);			//Put this in the same overloaded function
 		void writeLog(string str);			//Put this in the same overloaded function
+		void writeLog(string message, char nick[]);		//Put this in the same overloaded function
 		void closeLog();
+
 		
 	//Time functions
 		char* getTime();
