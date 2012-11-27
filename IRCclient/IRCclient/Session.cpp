@@ -1,4 +1,4 @@
-#include "Session.h"
+﻿#include "Session.h"
 
 Session::Session(void)
 {
@@ -181,11 +181,30 @@ void Session::chat()
 			memset(&data, 0, BUFF);
 			bytesRead = recv(sock, data, BUFF, 0);
 			str.append(data);
+			checkData(data);
 			cout << str;
 			str.clear();
 			WSAResetEvent(handles[0]);
 		}
 	}
+}
+
+void Session::checkData(char msg[])
+{
+
+	char PONG[1024];	// Initilizes PONG array to reply PING server request
+	PONG[0] = 'P';
+	PONG[1] = 'O';
+	PONG[2] = 'N';
+	PONG[3] = 'G';
+	PONG[4] = '\0';
+							
+	for(int i = 0; i < strlen(msg); i++)
+		if (msg[i] == 'P' || msg[i+1] == 'I' || msg[i+2] == 'N' || msg[i+3] == 'G'){  // if ping is found , PONG is replied
+				sendMsg(PONG);
+				memset(&PONG, 0, 1024); // clears the array to stop resend of PONG's
+			}
+
 }
 
 void Session::parseString(char parse[])

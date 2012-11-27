@@ -102,7 +102,8 @@ public class Session
 
 	//String parse
 		void parseString(char parse[]);
-		void parseString(string str, bool &startChat);
+		void parseString(string str, bool &startChat); 
+		void checkData(char msg[]);
 
 	//Log functions
 		void openLog();
