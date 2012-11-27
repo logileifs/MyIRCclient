@@ -24,10 +24,10 @@ Session::Session(void)
 	timeout.tv_usec = 0;
 
 	//Initialize handles
-	hStdIn = GetStdHandle(STD_INPUT_HANDLE);
-	handles[0] = WSACreateEvent();
-	handles[1] = hStdIn;
-	WSAEventSelect(sock, handles[0], FD_READ | FD_CLOSE);
+//	hStdIn = GetStdHandle(STD_INPUT_HANDLE);
+//	handles[0] = WSACreateEvent();
+//	handles[1] = hStdIn;
+//	WSAEventSelect(sock, handles[0], FD_READ | FD_CLOSE);
 }
 
 void Session::setServer(int argc, char*argv[])
@@ -60,7 +60,7 @@ void Session::openSocket(char server[], short portnr)
 	hostent *host;
 
 	host = (hostent *) gethostbyname((char *) server);		//Host address
-	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);		//Create socket
+	sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);		//Create socket
 
 	if(sock == INVALID_SOCKET)
 	{
@@ -134,9 +134,7 @@ void Session::startSession(char data[])
 
 int Session::receive(char data[])
 {
-//	fd_set readset;
-//	if(select(0, &readset, NULL, NULL, &timeout)!=0);	//Switch out select for Event handler
-		bytes = recv(sock, data, strlen(data), 0);
+	bytes = recv(sock, data, strlen(data), 0);
 
 	return bytes;
 }
@@ -148,18 +146,29 @@ void Session::sendMsg(char msg[])
 
 void Session::chat()
 {
+	HANDLE handles[10];
+	HANDLE hStdIn = GetStdHandle(STD_INPUT_HANDLE);
+
+	handles[0] = WSACreateEvent();
+	handles[1] = hStdIn;
+	WSAEventSelect(sock, handles[0], FD_READ | FD_CLOSE);
+
+	DWORD result;
+
 	string str;								//Move this to header file but don't use the same variable for startSession()
 	cout << endl;
 	cout << "Standing by for input" << endl;
 
 	while(connected())
 	{
+		result = WaitForMultipleObjects(2, handles, false, 5000);
+
 		cout << "Message: ";
 		cin.get(message, 510);
 		cout << getTime() << message << endl;
 		parseString(message);
 		sendMsg(message);
-		writeLog(message, nick);			//Overload log functions
+		writeLog(message, nick);
 
 		cin.clear();				//Clear input buffer
 		cin.ignore(512, '\n');		//Ignore all newline characters

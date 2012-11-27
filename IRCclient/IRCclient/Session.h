@@ -37,8 +37,8 @@ public class Session
 		sockaddr_in serverAddr;	//Socket address information
 
 	//Handles
-		HANDLE handles[2];
-		HANDLE hStdIn;
+//		HANDLE handles[2];
+//		HANDLE hStdIn;
 
 	//Bool
 		bool isConnected;
