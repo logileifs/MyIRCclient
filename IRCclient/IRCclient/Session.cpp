@@ -157,7 +157,7 @@ void Session::chat()
 
 	string str;								//Move this to header file but don't use the same variable for startSession()
 	cout << endl;
-	cout << "Standing by for input" << endl;
+	cout << "Standing by for input";
 
 	while(connected())
 	{
@@ -165,12 +165,12 @@ void Session::chat()
 
 		if (result == WAIT_OBJECT_0+1)
 		{
-			cout << "Message: ";
+			cout << "\nMessage: ";
 			cin.get(message, 510);
 			cout << getTime() << message << endl;
 			parseString(message);
-			sendMsg(message);
-			writeLog(message, nick);
+			sendMsg(message);			//Send last message 
+			writeLog(message, nick);	//Send last message to writeLog function
 
 			cin.clear();				//Clear input buffer
 			cin.ignore(512, '\n');		//Ignore all newline characters
@@ -178,18 +178,13 @@ void Session::chat()
 		
 		else if(result == WAIT_OBJECT_0)
 		{
-			//receive(data);
+			memset(&data, 0, BUFF);
 			bytesRead = recv(sock, data, BUFF, 0);
-			cout << data;
-//			str.append(data);
-//			cout << str;
-//			str.clear();
+			str.append(data);
+			cout << str;
+			str.clear();
 			WSAResetEvent(handles[0]);
 		}
-
-		
-		
-//		data.clear();	//TODO: CLEAR THIS ARRAY!!!!!!!1
 	}
 }
 
