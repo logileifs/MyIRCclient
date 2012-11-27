@@ -153,7 +153,7 @@ void Session::chat()
 	handles[1] = hStdIn;
 	WSAEventSelect(sock, handles[0], FD_READ | FD_CLOSE);
 
-	DWORD result;
+	DWORD result, bytesRead;
 
 	string str;								//Move this to header file but don't use the same variable for startSession()
 	cout << endl;
@@ -161,25 +161,35 @@ void Session::chat()
 
 	while(connected())
 	{
-		result = WaitForMultipleObjects(2, handles, false, 5000);
+		result = WaitForMultipleObjects(2, handles, false, 250);
 
-		cout << "Message: ";
-		cin.get(message, 510);
-		cout << getTime() << message << endl;
-		parseString(message);
-		sendMsg(message);
-		writeLog(message, nick);
-
-		cin.clear();				//Clear input buffer
-		cin.ignore(512, '\n');		//Ignore all newline characters
-
-		do
+		if (result == WAIT_OBJECT_0+1)
 		{
-			receive(data);		//New function here to receive data until \r\n
-			str.append(data);
-		}while(strncmp(data, "\r\n", 2)!=0 && strncmp(data, "\n",1)!=0 && strncmp(data, "\r",1)!=0);		//Needs a timer or something better
-		cout << str;
-		str.clear();
+			cout << "Message: ";
+			cin.get(message, 510);
+			cout << getTime() << message << endl;
+			parseString(message);
+			sendMsg(message);
+			writeLog(message, nick);
+
+			cin.clear();				//Clear input buffer
+			cin.ignore(512, '\n');		//Ignore all newline characters
+		}
+		
+		else if(result == WAIT_OBJECT_0)
+		{
+			//receive(data);
+			bytesRead = recv(sock, data, BUFF, 0);
+			cout << data;
+//			str.append(data);
+//			cout << str;
+//			str.clear();
+			WSAResetEvent(handles[0]);
+		}
+
+		
+		
+//		data.clear();	//TODO: CLEAR THIS ARRAY!!!!!!!1
 	}
 }
 
