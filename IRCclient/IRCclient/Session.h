@@ -13,14 +13,11 @@
 #include <conio.h>
 //#include <thread>		//Maybe test later
 
-//Project headers
-//#include "Misc.hpp"
-
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
 
-const int BUFF = 512;
+const int BUFF = 512;	//Create a global buffer constant
 
 public class Session
 {
@@ -36,10 +33,6 @@ public class Session
 		SOCKET sock;			//Socket handle
 		sockaddr_in serverAddr;	//Socket address information
 
-	//Handles
-//		HANDLE handles[2];
-//		HANDLE hStdIn;
-
 	//Bool
 		bool isConnected;
 		bool startChat;
@@ -48,9 +41,9 @@ public class Session
 		time_t rawTime;
 		struct tm * currentTime;
 
-		struct timeval timeout;		//Timeval struct for select()
-		timeval tv_sec; // = 3;		//Seconds variable for select()
-		timeval tv_usec;//=0;		//Microseconds to maybe use with select()
+		struct timeval timeout;
+		timeval tv_sec;
+		timeval tv_usec;
 
 		char clockTime[80];
 		char dateTime[80];
@@ -107,11 +100,10 @@ public class Session
 
 	//Log functions
 		void openLog();
-		void writeLog(string str);			//Put this in the same overloaded function
-		void writeLog(string message, char nick[]);		//Put this in the same overloaded function
+		void writeLog(string str);
+		void writeLog(string message, char nick[]);
 		void closeLog();
 
-		
 	//Time functions
 		char* getTime();
 		char* getDateTime();
