@@ -169,7 +169,7 @@ void Session::chat()
 			cin.get(message, 510);
 			cout << getTime() << message << endl;
 			parseString(message);
-			sendMsg(message);			//Send last message 
+			sendMsg(message);			//Send last message
 			writeLog(message, nick);	//Send last message to writeLog function
 
 			cin.clear();				//Clear input buffer
@@ -181,7 +181,7 @@ void Session::chat()
 			memset(&data, 0, BUFF);
 			bytesRead = recv(sock, data, BUFF, 0);
 			str.append(data);
-			checkData(data);
+//			checkData(data);
 			cout << str;
 			str.clear();
 			WSAResetEvent(handles[0]);
