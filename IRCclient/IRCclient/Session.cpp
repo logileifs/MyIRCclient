@@ -200,7 +200,7 @@ void Session::checkData(char msg[])
 	PONG[4] = '\0';
 							
 	for(int i = 0; i < strlen(msg); i++)
-		if (msg[i] == 'P' || msg[i+1] == 'I' || msg[i+2] == 'N' || msg[i+3] == 'G'){  // if ping is found , PONG is replied
+		if (msg[i] == 'P' && msg[i+1] == 'I' && msg[i+2] == 'N' && msg[i+3] == 'G'){  // if ping is found , PONG is replied
 				sendMsg(PONG);
 				memset(&PONG, 0, 1024); // clears the array to stop resend of PONG's
 			}
